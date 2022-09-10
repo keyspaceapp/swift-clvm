@@ -1,0 +1,50 @@
+{
+  "pins" : [
+    {
+      "identity" : "bigint",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/attaswift/BigInt",
+      "state" : {
+        "revision" : "0ed110f7555c34ff468e72e1686e59721f2b0da6",
+        "version" : "5.3.0"
+      }
+    },
+    {
+      "identity" : "binarycodable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jverkoey/BinaryCodable",
+      "state" : {
+        "revision" : "aebaa30f1b73c5c45c374d251029b8bd68bde755",
+        "version" : "0.3.1"
+      }
+    },
+    {
+      "identity" : "swift-bignum",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dankogai/swift-bignum",
+      "state" : {
+        "revision" : "c7e3e4374d9b956e5e9e9014952a981fcf2aca2b",
+        "version" : "5.2.5"
+      }
+    },
+    {
+      "identity" : "swift-bls-signatures",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:keyspacewallet/swift-bls-signatures.git",
+      "state" : {
+        "revision" : "d9ef33cfbc4fc008f14378ccb9ff1e036eadde4f",
+        "version" : "0.0.1"
+      }
+    },
+    {
+      "identity" : "swift-numerics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-numerics",
+      "state" : {
+        "revision" : "0a5bc04095a675662cf24757cc0640aa2204253b",
+        "version" : "1.0.2"
+      }
+    }
+  ],
+  "version" : 2
+}
