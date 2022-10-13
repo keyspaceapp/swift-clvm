@@ -272,13 +272,14 @@ func op_point_add(items: SExp) throws -> (Int, SExp) {
             throw(EvalError(message: "point_add on list", sexp: item))
         }
         do {
-            #warning("hacky")
-            p = p.add(item.atom!)
-//            p += G1Element.from_bytes(item.atom!)!
+            #warning("hack until c++ exceptions are handled in swift")
+            guard item.atom != nil && item.atom!.count == G1Element.size() else {
+                throw(ValueError("Length of bytes object not equal to G1Element::SIZE"))
+            }
+            p = p.add(G1Element.from_bytes(item.atom!).get_bytes())
             cost += POINT_ADD_COST_PER_ARG
-        }
-        catch {
-            throw(EvalError(message: "point_add expects blob, got \(item): \(error)", sexp: items))
+        } catch let error as ValueError {
+            throw(EvalError(message: "point_add expects blob, got \(item): \(error.message!)", sexp: items))
         }
     }
     return malloc_cost(cost: cost, atom: try SExp.to(v: .g1(p)))
