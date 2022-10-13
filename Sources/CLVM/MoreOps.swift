@@ -227,17 +227,15 @@ func op_gr_bytes(args: SExp) throws -> (Int, SExp) {
 }
 
 private func > (lhs: Data, rhs: Data) -> Bool {
-    guard lhs.count == rhs.count else {
-        return lhs.count > rhs.count
-    }
-    
-    for i in 0..<lhs.count {
-        if lhs[i] != rhs[i] {
-            return lhs[i] > rhs[i]
+    var index = 0
+    while index < lhs.count && index < rhs.count {
+        if lhs[index] != rhs[index] {
+            return lhs[index] > rhs[index]
         }
+        index += 1
     }
-    
-    return false
+    // Common prefix, shorter one comes first
+    return lhs.count > rhs.count
 }
 
 func op_pubkey_for_exp(args: SExp) throws -> (Int, SExp) {
