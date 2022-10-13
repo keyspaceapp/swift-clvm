@@ -163,7 +163,14 @@ func op_divmod(args: SExp) throws -> (Int, SExp) {
         throw(EvalError(message: "divmod with 0", sexp: try SExp.to(v: .int(i0))))
     }
     cost += (l0 + l1) * DIVMOD_COST_PER_BYTE
-    let (q, r) = BigInt(l0).quotientAndRemainder(dividingBy: i1)
+    
+    var q = i0 / i1
+    #warning("hacky, possibly incorrect")
+    let r = (i0 % i1 + i1) % i1 // hack to match python modulus behavior
+    if (q <= 0 && r != 0 && i0.sign != i1.sign) {
+        q -= 1
+    }
+    
     let q1 = try SExp.to(v: .int(q))
     let r1 = try SExp.to(v: .int(r))
     cost += (q1.atom!.count + r1.atom!.count) * MALLOC_COST_PER_BYTE
