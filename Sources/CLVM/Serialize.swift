@@ -284,7 +284,7 @@ func _atom_from_stream(f: inout Data.Iterator, b: UInt8, to_sexp: ((CastableType
     var size_blob = Data([b])
     if bit_count > 1 {
         var b: [UInt8] = []
-        for _ in 0..<bit_count {
+        for _ in 0..<bit_count - 1 {
             b.append(f.next()!)
         }
         if b.count != bit_count - 1 {
