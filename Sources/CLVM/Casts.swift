@@ -13,7 +13,9 @@ public func int_to_bytes<T>(v: T) -> Data where T: SignedInteger {
     if v == 0 {
         return Data()
     }
-    let byte_count = (v.bitWidth + 8) >> 3
+    
+    #warning("pretty hacky.. BigInt returns min bits which matches python behavior")
+    let byte_count = (BigInt(v).magnitude.bitWidth + 8) >> 3
     var r = [UInt8](v.to_bytes(byte_count: byte_count, endian: .big, signed: true))
     // make sure the string returned is minimal
     // ie. no leading 00 or ff bytes that are unnecessary
@@ -35,7 +37,6 @@ public enum Endianness {
 }
 
 // These functions should have the same interface and behavior as the corresponding python methods
-#warning("hacky, likely broken")
 public extension SignedInteger {
     static func from_bytes<T>(_ bytes: Data, endian: Endianness, signed: Bool = false) -> T where T: SignedInteger {
         var signed = signed
@@ -73,12 +74,14 @@ public extension SignedInteger {
 
     func to_bytes(byte_count: Int, endian: Endianness, signed: Bool = false) -> Data {
         var bytes: [UInt8] = Array(repeating: 0, count: byte_count)
-        let ndigits: Int
         let do_twos_comp: Bool
+        let MASK: UInt8 = 0xff
+        let SHIFT: UInt = 8
         
         #warning("a bit hacky but should work")
         var self_bytes: [UInt8] = []
-        for word in self.words {
+        // Use absolute value to match python behavior
+        for word in self.magnitude.words {
             self_bytes.append(contentsOf: word.bytes)
         }
         
@@ -87,11 +90,12 @@ public extension SignedInteger {
             self_bytes.removeLast()
         }
         
-        ndigits = self_bytes.count
+        let ndigits = self_bytes.count
         
         if self < 0  {
-            assert(signed)
+            precondition(signed)
             if !signed {
+                print("can't convert negative int to unsigned")
                 return Data()
             }
             do_twos_comp = true
@@ -109,32 +113,50 @@ public extension SignedInteger {
             pincr = -1
         }
         
-        assert(ndigits == 0 || self_bytes[ndigits - 1] != 0);
+        /* Copy over all the digits.
+           It's crucial that every digit except for the MSD contribute
+           exactly SHIFT bits to the total, so first assert that the int is
+           normalized. */
+        precondition(ndigits == 0 || self_bytes[ndigits - 1] != 0);
         var j = 0
         var accum: UInt16 = 0
-        var accumbits: Int = 0
-        var carry: UInt8 = 0
+        var accumbits: UInt = 0
+        var carry: UInt8 = do_twos_comp ? 1 : 0
         for i in 0..<ndigits {
             var thisdigit: UInt8 = self_bytes[i]
             if do_twos_comp {
-                thisdigit = (thisdigit ^ 0xff) + carry
-                carry = thisdigit >> 8
-                thisdigit &= 0xff
+                thisdigit = (thisdigit ^ MASK) + carry
+                carry = thisdigit >> SHIFT
+                thisdigit &= MASK
             }
             
+            /* Because we're going LSB to MSB, thisdigit is more
+               significant than what's already in accum, so needs to be
+               prepended to accum. */
             accum |= UInt16(thisdigit) << accumbits
             
+            /* The most-significant digit may be (probably is) at least
+               partly empty. */
             if i == ndigits - 1 {
-                var s: UInt8 = do_twos_comp ? thisdigit ^ 0xff : thisdigit
+                /* Count # of sign bits -- they needn't be stored,
+                 * although for signed conversion we need later to
+                 * make sure at least one sign bit gets stored. */
+                var s: UInt8 = do_twos_comp ? thisdigit ^ MASK : thisdigit
                 while (s != 0) {
                     s >>= 1
                     accumbits += 1
                 }
-            } else {
-                accumbits += 8
+            }
+            else {
+                accumbits += SHIFT
             }
             
+            /* Store as many bytes as possible. */
             while accumbits >= 8 {
+                if (j >= byte_count) {
+                    print("overflow")
+                    precondition(false)
+                }
                 j += 1
                 bytes[p] = UInt8(accum & 0xff)
                 p += pincr
@@ -143,18 +165,19 @@ public extension SignedInteger {
             }
         }
         
-        assert(accumbits < 8)
-        assert(carry == 0)  /* else do_twos_comp and *every* digit was 0 */
+        precondition(accumbits < 8)
+        precondition(carry == 0)  /* else do_twos_comp and *every* digit was 0 */
         if (accumbits > 0) {
-//            if (j >= byte_count) {
-//                //goto Overflow;
-//            }
+            if (j >= byte_count) {
+                print("overflow")
+                precondition(false)
+            }
             j += 1
             if (do_twos_comp) {
                 /* Fill leading bits of the byte with sign bits
                    (appropriately pretending that the int had an
                    infinite supply of sign bits). */
-                accum |= (~0) << accumbits
+                accum |= (~UInt16(0)) << accumbits
             }
             bytes[p] = UInt8(accum & 0xff)
             p += pincr
@@ -166,13 +189,13 @@ public extension SignedInteger {
                exists. */
             let msb: UInt8 = bytes[p - pincr]
             let sign_bit_set = msb >= 0x80
-            assert(accumbits == 0)
+            precondition(accumbits == 0)
             if (sign_bit_set == do_twos_comp) {
                 return Data(bytes)
             }
             else {
                 print("overflow")
-//                goto Overflow;
+                precondition(false)
             }
         }
 
