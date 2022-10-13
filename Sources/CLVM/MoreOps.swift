@@ -207,7 +207,37 @@ func op_gr(args: SExp) throws -> (Int, SExp) {
 }
 
 func op_gr_bytes(args: SExp) throws -> (Int, SExp) {
-    throw(EvalError(message: "op_gr_bytes not implemented", sexp: SExp(obj: CLVMObject(v: .string("")))))
+    let arg_list = args.as_iter()
+    if arg_list.count != 2 {
+        throw(EvalError(message: ">s takes exactly 2 arguments", sexp: args))
+    }
+    
+    let a0 = arg_list[0]
+    let a1 = arg_list[1]
+    if a0.pair != nil || a1.pair != nil {
+        throw(EvalError(message: ">s on list", sexp: a0.pair != nil ? a0 : a1))
+    }
+    
+    let b0 = a0.atom!
+    let b1 = a1.atom!
+    var cost = GRS_BASE_COST
+    cost += (b0.count + b1.count) * GRS_COST_PER_BYTE
+    
+    return (cost, b0 > b1 ? SExp.true_sexp : SExp.false_sexp)
+}
+
+private func > (lhs: Data, rhs: Data) -> Bool {
+    guard lhs.count == rhs.count else {
+        return lhs.count > rhs.count
+    }
+    
+    for i in 0..<lhs.count {
+        if lhs[i] != rhs[i] {
+            return lhs[i] > rhs[i]
+        }
+    }
+    
+    return false
 }
 
 func op_pubkey_for_exp(args: SExp) throws -> (Int, SExp) {
