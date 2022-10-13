@@ -208,7 +208,6 @@ open class SExp: CLVMObjectProtocol, Equatable, CustomDebugStringConvertible {
     }
 
     func as_int() -> BigInt {
-        #warning("super hacky and broken")
         return int_from_bytes(blob: self.atom!)
     }
 
