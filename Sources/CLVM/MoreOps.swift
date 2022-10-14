@@ -297,7 +297,35 @@ func op_strlen(args: SExp) throws -> (Int, SExp) {
 }
 
 func op_substr(args: SExp) throws -> (Int, SExp) {
-    throw(EvalError(message: "op_substr not implemented", sexp: SExp(obj: CLVMObject(v: .string("")))))
+    let arg_count = try args.list_len()
+    if [2, 3].firstIndex(of: arg_count) == nil {
+        throw(EvalError(message: "substr takes exactly 2 or 3 arguments", sexp: args))
+    }
+    let a0 = try args.first()
+    if a0.pair != nil {
+        throw(EvalError(message: "substr on list", sexp: a0))
+    }
+    
+    let s0 = Data(a0.atom!)
+    
+    let i1: Int32
+    let i2: Int32
+    if arg_count == 2 {
+        i1 = try args_as_int32(op_name: "substr", args: args.rest())[0]
+        i2 = Int32(s0.count)
+    }
+    else {
+        let args = try args_as_int32(op_name: "substr", args: args.rest())
+        i1 = args[0]
+        i2 = args[1]
+    }
+
+    if i2 > s0.count || i2 < i1 || i2 < 0 || i1 < 0 {
+        throw(EvalError(message: "invalid indices for substr", sexp: args))
+    }
+    let s = s0[i1..<i2]
+    let cost = 1
+    return (cost, try SExp.to(v: .bytes(s)))
 }
 
 func op_concat(args: SExp) throws -> (Int, SExp) {
