@@ -7,7 +7,7 @@ final class DivEdgeCaseTests: XCTestCase {
     func test_div_1() throws {
         try verify_throwing_program(
             program: "ff1380",
-            expected_message: "/ takes exactly 2 arguments"
+            expected_output: "/ takes exactly 2 arguments"
         )
     }
     
@@ -16,7 +16,7 @@ final class DivEdgeCaseTests: XCTestCase {
     func test_div_2() throws {
         try verify_throwing_program(
             program: "ff13ffff010180",
-            expected_message: "/ takes exactly 2 arguments"
+            expected_output: "/ takes exactly 2 arguments"
         )
     }
     
@@ -34,7 +34,7 @@ final class DivEdgeCaseTests: XCTestCase {
     func test_div_4() throws {
         try verify_throwing_program(
             program: "ff13ffff0101ffff0101ffff010180",
-            expected_message: "/ takes exactly 2 arguments"
+            expected_output: "/ takes exactly 2 arguments"
         )
     }
     
@@ -43,7 +43,7 @@ final class DivEdgeCaseTests: XCTestCase {
     func test_div_5() throws {
         try verify_throwing_program(
             program: "ff13ff80ff8080",
-            expected_message: "div with 0"
+            expected_output: "div with 0"
         )
     }
     
@@ -52,7 +52,7 @@ final class DivEdgeCaseTests: XCTestCase {
     func test_div_6() throws {
         try verify_throwing_program(
             program: "ff13ffff01ff01ff0280ffff01ff01ff028080",
-            expected_message: "/ requires int args"
+            expected_output: "/ requires int args"
         )
     }
     

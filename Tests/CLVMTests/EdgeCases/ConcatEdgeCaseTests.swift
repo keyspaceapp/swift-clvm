@@ -43,7 +43,7 @@ final class ConcatEdgeCaseTests: XCTestCase {
     func test_concat_5() throws {
         try verify_throwing_program(
             program: "ff0effff01ff01ff0280ffff01ff01ff028080",
-            expected_message: "concat on list"
+            expected_output: "concat on list"
         )
     }
     
@@ -97,7 +97,7 @@ final class ConcatEdgeCaseTests: XCTestCase {
     func test_concat_11() throws {
         try verify_throwing_program(
             program: "ff0effff01ff01ff0280ffff010180",
-            expected_message: "concat on list"
+            expected_output: "concat on list"
         )
     }
 
@@ -106,7 +106,7 @@ final class ConcatEdgeCaseTests: XCTestCase {
     func test_concat_12() throws {
         try verify_throwing_program(
             program: "ff0effff0101ffff01ff01ff028080",
-            expected_message: "concat on list"
+            expected_output: "concat on list"
         )
     }
 

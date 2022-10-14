@@ -7,7 +7,7 @@ final class DivmodEdgeCaseTests: XCTestCase {
     func test_divmod_1() throws {
         try verify_throwing_program(
             program: "ff1480",
-            expected_message: "divmod takes exactly 2 arguments"
+            expected_output: "divmod takes exactly 2 arguments"
         )
     }
     
@@ -16,7 +16,7 @@ final class DivmodEdgeCaseTests: XCTestCase {
     func test_divmod_2() throws {
         try verify_throwing_program(
             program: "ff14ffff010180",
-            expected_message: "divmod takes exactly 2 arguments"
+            expected_output: "divmod takes exactly 2 arguments"
         )
     }
     
@@ -34,7 +34,7 @@ final class DivmodEdgeCaseTests: XCTestCase {
     func test_divmod_4() throws {
         try verify_throwing_program(
             program: "ff14ffff0101ffff0101ffff010180",
-            expected_message: "divmod takes exactly 2 arguments"
+            expected_output: "divmod takes exactly 2 arguments"
         )
     }
     
@@ -43,7 +43,7 @@ final class DivmodEdgeCaseTests: XCTestCase {
     func test_divmod_5() throws {
         try verify_throwing_program(
             program: "ff14ff80ff8080",
-            expected_message: "divmod with 0"
+            expected_output: "divmod with 0"
         )
     }
     
@@ -52,7 +52,7 @@ final class DivmodEdgeCaseTests: XCTestCase {
     func test_divmod_6() throws {
         try verify_throwing_program(
             program: "ff14ffff01ff01ff0280ffff01ff01ff028080",
-            expected_message: "divmod requires int args"
+            expected_output: "divmod requires int args"
         )
     }
     

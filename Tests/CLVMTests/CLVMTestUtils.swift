@@ -24,7 +24,7 @@ func verify_program(
 func verify_throwing_program(
     program: String,
     args: String = "80",
-    expected_message: String
+    expected_output: String
 ) throws {
     XCTAssertThrowsError(try run_serialized_program(
         program: [UInt8](Data(hex: program)),
@@ -34,7 +34,7 @@ func verify_throwing_program(
     ), "", { error in
         let error = error as? EvalError
         XCTAssertNotNil(error)
-        XCTAssertEqual(error?.message, expected_message)
+        XCTAssertEqual(error?.message, expected_output)
     })
 }
 

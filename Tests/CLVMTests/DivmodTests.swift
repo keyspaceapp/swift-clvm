@@ -56,7 +56,7 @@ final class DivmodTests: XCTestCase {
         try verify_throwing_program(
             program: "ff14ff02ff0580",
             args: "ffff8200c8ff8301388180ff4980",
-            expected_message: "divmod requires int args"
+            expected_output: "divmod requires int args"
         )
     }
     
@@ -66,7 +66,7 @@ final class DivmodTests: XCTestCase {
         try verify_throwing_program(
             program: "ff14ff02ff0580",
             args: "ff83013881ffff8200c8ff498080",
-            expected_message: "divmod requires int args"
+            expected_output: "divmod requires int args"
         )
     }
     
@@ -76,7 +76,7 @@ final class DivmodTests: XCTestCase {
         try verify_throwing_program(
             program: "ff14ff02ff0580",
             args: "ff83013881ff8080",
-            expected_message: "divmod with 0"
+            expected_output: "divmod with 0"
         )
     }
     

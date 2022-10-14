@@ -7,7 +7,7 @@ final class ConsEdgeCaseTests: XCTestCase {
     func test_cons_1() throws {
         try verify_throwing_program(
             program: "ff0480",
-            expected_message: "c takes exactly 2 arguments"
+            expected_output: "c takes exactly 2 arguments"
         )
     }
     
@@ -16,7 +16,7 @@ final class ConsEdgeCaseTests: XCTestCase {
     func test_cons_2() throws {
         try verify_throwing_program(
             program: "ff04ffff010180",
-            expected_message: "c takes exactly 2 arguments"
+            expected_output: "c takes exactly 2 arguments"
         )
     }
     
@@ -34,7 +34,7 @@ final class ConsEdgeCaseTests: XCTestCase {
     func test_cons_4() throws {
         try verify_throwing_program(
             program: "ff04ffff0101ffff0101ffff010180",
-            expected_message: "c takes exactly 2 arguments"
+            expected_output: "c takes exactly 2 arguments"
         )
     }
     

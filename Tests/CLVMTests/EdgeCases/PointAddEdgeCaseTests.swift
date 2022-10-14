@@ -1,6 +1,6 @@
 import XCTest
 
-final class PointAddTests: XCTestCase {
+final class PointAddEdgeCaseTests: XCTestCase {
     
     // brun '(point_add)'
     // 0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -16,7 +16,7 @@ final class PointAddTests: XCTestCase {
     func test_point_add_2() throws {
         try verify_throwing_program(
             program: "ff1dffff010180",
-            expected_message: "point_add expects blob, got 01: Length of bytes object not equal to G1Element::SIZE"
+            expected_output: "point_add expects blob, got 01: Length of bytes object not equal to G1Element::SIZE"
         )
     }
     
@@ -25,7 +25,7 @@ final class PointAddTests: XCTestCase {
     func test_point_add_3() throws {
         try verify_throwing_program(
             program: "ff1dffff010180",
-            expected_message: "point_add expects blob, got 01: Length of bytes object not equal to G1Element::SIZE"
+            expected_output: "point_add expects blob, got 01: Length of bytes object not equal to G1Element::SIZE"
         )
     }
     
@@ -34,7 +34,7 @@ final class PointAddTests: XCTestCase {
     func test_point_add_4() throws {
         try verify_throwing_program(
             program: "ff1dff80ff8080",
-            expected_message: "point_add expects blob, got 80: Length of bytes object not equal to G1Element::SIZE"
+            expected_output: "point_add expects blob, got 80: Length of bytes object not equal to G1Element::SIZE"
         )
     }
     
@@ -43,7 +43,7 @@ final class PointAddTests: XCTestCase {
     func test_point_add_5() throws {
         try verify_throwing_program(
             program: "ff1dffff01ff01ff0280ffff01ff01ff028080",
-            expected_message: "point_add on list"
+            expected_output: "point_add on list"
         )
     }
     
@@ -52,7 +52,7 @@ final class PointAddTests: XCTestCase {
     func test_point_add_6() throws {
         try verify_throwing_program(
             program: "ff1dffff0182ffffffff0182ffff80",
-            expected_message: "point_add expects blob, got 82ffff: Length of bytes object not equal to G1Element::SIZE"
+            expected_output: "point_add expects blob, got 82ffff: Length of bytes object not equal to G1Element::SIZE"
         )
     }
     
@@ -61,7 +61,7 @@ final class PointAddTests: XCTestCase {
     func test_point_add_8() throws {
         try verify_throwing_program(
             program: "ff1dffff01820080ffff0182008080",
-            expected_message: "point_add expects blob, got 820080: Length of bytes object not equal to G1Element::SIZE"
+            expected_output: "point_add expects blob, got 820080: Length of bytes object not equal to G1Element::SIZE"
         )
     }
     
@@ -70,7 +70,7 @@ final class PointAddTests: XCTestCase {
     func test_point_add_9() throws {
         try verify_throwing_program(
             program: "ff1dffff0181ffffff0181ff80",
-            expected_message: "point_add expects blob, got 81ff: Length of bytes object not equal to G1Element::SIZE"
+            expected_output: "point_add expects blob, got 81ff: Length of bytes object not equal to G1Element::SIZE"
         )
     }
 

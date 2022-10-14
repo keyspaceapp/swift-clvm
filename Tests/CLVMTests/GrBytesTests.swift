@@ -1,85 +1,101 @@
 import XCTest
 
 final class GrBytesTests: XCTestCase {
-
-    // brun '(>s)'
-    // FAIL: >s takes exactly 2 arguments ()
+    
+    // brun -c '(>s (q . 0x00) (q . ""))'
+    // cost = 159
+    // 1
     func test_gr_bytes_1() throws {
-        try verify_throwing_program(
-            program: "ff0a80",
-            expected_message: ">s takes exactly 2 arguments"
+        try verify_program(
+            program: "ff0affff0100ffff018080",
+            expected_output: "01",
+            expected_cost: 159
         )
     }
     
-    // brun -n '(>s (q . 1))'
-    // FAIL: >s takes exactly 2 arguments (1)
+    // brun -c '(>s (q . 0x01) (q . 0x00))'
+    // cost = 160
+    // 1
     func test_gr_bytes_2() throws {
-        try verify_throwing_program(
-            program: "ff0affff010180",
-            expected_message: ">s takes exactly 2 arguments"
+        try verify_program(
+            program: "ff0affff0101ffff010080",
+            expected_output: "01",
+            expected_cost: 160
         )
     }
     
-    // brun '(>s (q . 1) (q . 1))'
+    // brun -c '(>s (q . 0x00) (q . 0x01))'
+    // cost = 160
     // ()
     func test_gr_bytes_3() throws {
         try verify_program(
-            program: "ff0affff0101ffff010180",
-            expected_output: "80"
+            program: "ff0affff0100ffff010180",
+            expected_output: "80",
+            expected_cost: 160
         )
     }
     
-    // brun -n '(>s (q . 1) (q . 1) (q . 1))'
-    // FAIL: >s takes exactly 2 arguments (1 1 1)
-    func test_gr_bytes_4() throws {
-        try verify_throwing_program(
-            program: "ff0affff0101ffff0101ffff010180",
-            expected_message: ">s takes exactly 2 arguments"
-        )
-    }
-    
-    // brun '(>s () ())'
+    // brun -c '(>s (q . 0x1000) (q . 0x1001))'
+    // cost = 162
     // ()
+    func test_gr_bytes_4() throws {
+        try verify_program(
+            program: "ff0affff01821000ffff0182100180",
+            expected_output: "80",
+            expected_cost: 162
+        )
+    }
+    
+    // brun -c '(>s (q . 0x1000) (q . 0x01))'
+    // cost = 161
+    // 1
     func test_gr_bytes_5() throws {
         try verify_program(
-            program: "ff0aff80ff8080",
-            expected_output: "80"
+            program: "ff0affff01821000ffff010180",
+            expected_output: "01",
+            expected_cost: 161
         )
     }
     
-    // brun -n '(>s (q . (1 2)) (q . (1 2)))'
-    // FAIL: >s on list (1 2)
+    // brun -c '(>s (q . 0x1000) (q . 0x1000))'
+    // cost = 162
+    // ()
     func test_gr_bytes_6() throws {
-        try verify_throwing_program(
-            program: "ff0affff01ff01ff0280ffff01ff01ff028080",
-            expected_message: ">s on list"
+        try verify_program(
+            program: "ff0affff01821000ffff0182100080",
+            expected_output: "80",
+            expected_cost: 162
         )
     }
     
-    // brun '(>s (q . 0xffff) (q . 0xffff))' '(q . (1 2)))'
+    // brun -c '(>s (q . 0x001004) (q . 0x1005))'
+    // cost = 163
     // ()
     func test_gr_bytes_7() throws {
         try verify_program(
-            program: "ff0affff0182ffffffff0182ffff80",
-            expected_output: "80"
+            program: "ff0affff0183001004ffff0182100580",
+            expected_output: "80",
+            expected_cost: 163
         )
     }
     
-    // brun '(>s (q . 128) (q . 128))'
-    // ()
+    // brun -c '(>s (q . 0x1005) (q . 0x001004))'
+    // cost = 163
+    // 1
     func test_gr_bytes_8() throws {
         try verify_program(
-            program: "ff0affff01820080ffff0182008080",
-            expected_output: "80"
+            program: "ff0affff01821005ffff018300100480",
+            expected_output: "01",
+            expected_cost: 163
         )
     }
     
-    // brun '(>s (q . -1) (q . -1))'
-    // ()
+    // brun -c '(>s (q . (100 200)) (q . 0x001004))'
+    // FAIL: >s on list (100 200)
     func test_gr_bytes_9() throws {
-        try verify_program(
-            program: "ff0affff0181ffffff0181ff80",
-            expected_output: "80"
+        try verify_throwing_program(
+            program: "ff0affff01ff64ff8200c880ffff018300100480",
+            expected_output: ">s on list"
         )
     }
 

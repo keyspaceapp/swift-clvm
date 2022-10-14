@@ -43,7 +43,7 @@ final class AddEdgeCaseTests: XCTestCase {
     func test_add_5() throws {
         try verify_throwing_program(
             program: "ff10ffff01ff01ff0280ffff01ff01ff028080",
-            expected_message: "+ requires int args"
+            expected_output: "+ requires int args"
         )
     }
     
