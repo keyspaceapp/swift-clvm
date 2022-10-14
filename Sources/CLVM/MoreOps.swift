@@ -186,7 +186,13 @@ func op_div(args: SExp) throws -> (Int, SExp) {
         throw(EvalError(message: "div with 0", sexp: try SExp.to(v: .int(i0))))
     }
     cost += (l0 + l1) * DIV_COST_PER_BYTE
-    var (q, r) = i0.quotientAndRemainder(dividingBy: i1)
+    
+    #warning("hacky, possibly incorrect")
+    var q = i0 / i1
+    let r = (i0 % i1 + i1) % i1 // hack to match python modulus behavior
+    if (q <= 0 && r != 0 && i0.sign != i1.sign) {
+        q -= 1
+    }
 
     // this is to preserve a buggy behavior from the initial implementation
     // of this operator.
