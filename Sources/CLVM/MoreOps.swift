@@ -163,7 +163,14 @@ func op_divmod(args: SExp) throws -> (Int, SExp) {
         throw(EvalError(message: "divmod with 0", sexp: try SExp.to(v: .int(i0))))
     }
     cost += (l0 + l1) * DIVMOD_COST_PER_BYTE
-    let (q, r) = BigInt(l0).quotientAndRemainder(dividingBy: i1)
+    
+    var q = i0 / i1
+    #warning("hacky, possibly incorrect")
+    let r = (i0 % i1 + i1) % i1 // hack to match python modulus behavior
+    if (q <= 0 && r != 0 && i0.sign != i1.sign) {
+        q -= 1
+    }
+    
     let q1 = try SExp.to(v: .int(q))
     let r1 = try SExp.to(v: .int(r))
     cost += (q1.atom!.count + r1.atom!.count) * MALLOC_COST_PER_BYTE
@@ -179,7 +186,13 @@ func op_div(args: SExp) throws -> (Int, SExp) {
         throw(EvalError(message: "div with 0", sexp: try SExp.to(v: .int(i0))))
     }
     cost += (l0 + l1) * DIV_COST_PER_BYTE
-    var (q, r) = i0.quotientAndRemainder(dividingBy: i1)
+    
+    #warning("hacky, possibly incorrect")
+    var q = i0 / i1
+    let r = (i0 % i1 + i1) % i1 // hack to match python modulus behavior
+    if (q <= 0 && r != 0 && i0.sign != i1.sign) {
+        q -= 1
+    }
 
     // this is to preserve a buggy behavior from the initial implementation
     // of this operator.
@@ -200,7 +213,35 @@ func op_gr(args: SExp) throws -> (Int, SExp) {
 }
 
 func op_gr_bytes(args: SExp) throws -> (Int, SExp) {
-    throw(EvalError(message: "op_gr_bytes not implemented", sexp: SExp(obj: CLVMObject(v: .string("")))))
+    let arg_list = args.as_iter()
+    if arg_list.count != 2 {
+        throw(EvalError(message: ">s takes exactly 2 arguments", sexp: args))
+    }
+    
+    let a0 = arg_list[0]
+    let a1 = arg_list[1]
+    if a0.pair != nil || a1.pair != nil {
+        throw(EvalError(message: ">s on list", sexp: a0.pair != nil ? a0 : a1))
+    }
+    
+    let b0 = a0.atom!
+    let b1 = a1.atom!
+    var cost = GRS_BASE_COST
+    cost += (b0.count + b1.count) * GRS_COST_PER_BYTE
+    
+    return (cost, b0 > b1 ? SExp.true_sexp : SExp.false_sexp)
+}
+
+private func > (lhs: Data, rhs: Data) -> Bool {
+    var index = 0
+    while index < lhs.count && index < rhs.count {
+        if lhs[index] != rhs[index] {
+            return lhs[index] > rhs[index]
+        }
+        index += 1
+    }
+    // Common prefix, shorter one comes first
+    return lhs.count > rhs.count
 }
 
 func op_pubkey_for_exp(args: SExp) throws -> (Int, SExp) {
@@ -235,13 +276,14 @@ func op_point_add(items: SExp) throws -> (Int, SExp) {
             throw(EvalError(message: "point_add on list", sexp: item))
         }
         do {
-            #warning("hacky")
-            p = p.add(item.atom!)
-//            p += G1Element.from_bytes(item.atom!)!
+            #warning("hack until c++ exceptions are handled in swift")
+            guard item.atom != nil && item.atom!.count == G1Element.size() else {
+                throw(ValueError("Length of bytes object not equal to G1Element::SIZE"))
+            }
+            p = p.add(G1Element.from_bytes(item.atom!).get_bytes())
             cost += POINT_ADD_COST_PER_ARG
-        }
-        catch {
-            throw(EvalError(message: "point_add expects blob, got \(item): \(error)", sexp: items))
+        } catch let error as ValueError {
+            throw(EvalError(message: "point_add expects blob, got \(item): \(error.message!)", sexp: items))
         }
     }
     return malloc_cost(cost: cost, atom: try SExp.to(v: .g1(p)))
@@ -261,7 +303,35 @@ func op_strlen(args: SExp) throws -> (Int, SExp) {
 }
 
 func op_substr(args: SExp) throws -> (Int, SExp) {
-    throw(EvalError(message: "op_substr not implemented", sexp: SExp(obj: CLVMObject(v: .string("")))))
+    let arg_count = try args.list_len()
+    if [2, 3].firstIndex(of: arg_count) == nil {
+        throw(EvalError(message: "substr takes exactly 2 or 3 arguments", sexp: args))
+    }
+    let a0 = try args.first()
+    if a0.pair != nil {
+        throw(EvalError(message: "substr on list", sexp: a0))
+    }
+    
+    let s0 = Data(a0.atom!)
+    
+    let i1: Int32
+    let i2: Int32
+    if arg_count == 2 {
+        i1 = try args_as_int32(op_name: "substr", args: args.rest())[0]
+        i2 = Int32(s0.count)
+    }
+    else {
+        let args = try args_as_int32(op_name: "substr", args: args.rest())
+        i1 = args[0]
+        i2 = args[1]
+    }
+
+    if i2 > s0.count || i2 < i1 || i2 < 0 || i1 < 0 {
+        throw(EvalError(message: "invalid indices for substr", sexp: args))
+    }
+    let s = s0[i1..<i2]
+    let cost = 1
+    return (cost, try SExp.to(v: .bytes(s)))
 }
 
 func op_concat(args: SExp) throws -> (Int, SExp) {

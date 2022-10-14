@@ -58,11 +58,10 @@ public func run_generator2(
             return .success((nil, convert_spend_bundle_conds(sb: spend_bundle_conds!)))
         } else {
             // a validation error occurred
-            #warning("probably incorrect")
-            return .success((error?.rawValue, nil)) // Ok((error_code.map(|x| x.into()), None))
+            return .success((error?.rawValue, nil))
         }
     case .failure(let error):
         // a validation error occurred
-        return .failure(error) // eval_err_to_pyresult(py, eval_err, allocator),
+        return .failure(error)
     }
 }

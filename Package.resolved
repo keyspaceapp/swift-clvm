@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:keyspacewallet/swift-bls-signatures.git",
       "state" : {
-        "revision" : "d9ef33cfbc4fc008f14378ccb9ff1e036eadde4f",
-        "version" : "0.0.1"
+        "revision" : "d2dd70f5b10f2091aa0c837dc9dc713334fe45df",
+        "version" : "0.0.2"
       }
     },
     {
