@@ -143,8 +143,7 @@ func op_multiply(args: SExp) throws -> (Int, SExp) {
         return malloc_cost(cost: cost, atom: try SExp.to(v: .int(1)))
     }
     var (v, vs) = operands.first!
-
-    for (r, rs) in operands {
+    for (r, rs) in operands.dropFirst() {
         cost += MUL_COST_PER_OP
         cost += (rs + vs) * MUL_LINEAR_COST_PER_BYTE
         cost += (rs * vs) / MUL_SQUARE_COST_PER_BYTE_DIVIDER
