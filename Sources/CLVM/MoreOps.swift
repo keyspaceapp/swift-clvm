@@ -485,5 +485,16 @@ func op_all(args: SExp) throws -> (Int, SExp) {
 }
 
 func op_softfork(args: SExp) throws -> (Int, SExp) {
-    throw(EvalError(message: "op_softfork not implemented", sexp: SExp(obj: CLVMObject(v: .string("")))))
+    if try args.list_len() < 1 {
+        throw(EvalError(message: "softfork takes at least 1 argument", sexp: args))
+    }
+    let a = try args.first()
+    if a.pair != nil {
+        throw(EvalError(message: "softfork requires int args", sexp: a))
+    }
+    let cost = a.as_int()
+    if cost < 1 {
+        throw(EvalError(message: "cost must be > 0", sexp: args))
+    }
+    return (Int(cost), SExp.false_sexp)
 }
