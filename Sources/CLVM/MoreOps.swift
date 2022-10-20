@@ -370,7 +370,28 @@ func op_ash(args: SExp) throws -> (Int, SExp) {
 }
 
 func op_lsh(args: SExp) throws -> (Int, SExp) {
-    throw(EvalError(message: "op_lsh not implemented", sexp: SExp(obj: CLVMObject(v: .string("")))))
+    let int_list = try args_as_int_list(op_name: "lsh", args: args, count: 2)
+    let (_, l0) = int_list[0]
+    let (i1, l1) = int_list[1]
+    if l1 > 4 {
+        throw(EvalError(message: "lsh requires int32 args (with no leading zeros)", sexp: try args.rest().first()))
+    }
+    if abs(i1) > 65535 {
+        throw(EvalError(message: "shift too large", sexp: try SExp.to(v: .int(i1))))
+    }
+    // we actually want i0 to be an *unsigned* int
+    let a0 = try args.first().atom!
+    let i0: BigInt = Int.from_bytes(a0, endian: .big, signed: false)
+    let r: BigInt
+    if i1 >= 0 {
+        r = i0 << i1
+    }
+    else {
+        r = i0 >> -i1
+    }
+    var cost = LSHIFT_BASE_COST
+    cost += (l0 + limbs_for_int(v: r)) * LSHIFT_COST_PER_BYTE
+    return malloc_cost(cost: cost, atom: try SExp.to(v: .int(r)))
 }
 
 func binop_reduction(op_name: String, initial_value: BigInt, args: SExp, op_f: (BigInt, BigInt) -> BigInt) throws -> (Int, SExp) {
