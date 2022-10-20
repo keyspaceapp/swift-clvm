@@ -348,7 +348,25 @@ func op_concat(args: SExp) throws -> (Int, SExp) {
 }
 
 func op_ash(args: SExp) throws -> (Int, SExp) {
-    throw(EvalError(message: "op_ash not implemented", sexp: SExp(obj: CLVMObject(v: .string("")))))
+    let int_list = try args_as_int_list(op_name: "ash", args: args, count: 2)
+    let (i0, l0) = int_list[0]
+    let (i1, l1) = int_list[1]
+    if l1 > 4 {
+        throw(EvalError(message: "ash requires int32 args (with no leading zeros)", sexp: try args.rest().first()))
+    }
+    if abs(i1) > 65535 {
+        throw(EvalError(message: "shift too large", sexp: try SExp.to(v: .int(i1))))
+    }
+    let r: BigInt
+    if i1 >= 0 {
+        r = i0 << i1
+    }
+    else {
+        r = i0 >> -i1
+    }
+    var cost = ASHIFT_BASE_COST
+    cost += (l0 + limbs_for_int(v: r)) * ASHIFT_COST_PER_BYTE
+    return malloc_cost(cost: cost, atom: try SExp.to(v: .int(r)))
 }
 
 func op_lsh(args: SExp) throws -> (Int, SExp) {
