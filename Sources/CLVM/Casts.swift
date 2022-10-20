@@ -27,7 +27,8 @@ public func int_to_bytes<T>(v: T) -> Data where T: SignedInteger {
 
 /// Return the number of bytes required to represent this integer.
 func limbs_for_int(v: BigInt) -> Int {
-    return (v.bitWidth + 7) >> 3
+    #warning("magnitude is pretty hacky, very brittle")
+    return (v.magnitude.bitWidth + 7) >> 3
 }
 
 
