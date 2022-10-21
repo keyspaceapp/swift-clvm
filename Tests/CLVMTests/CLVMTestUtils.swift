@@ -22,6 +22,7 @@ func verify_program(
 }
 
 func verify_throwing_program(
+    max_cost: UInt64? = nil,
     program: String,
     args: String = "80",
     expected_output: String
@@ -29,7 +30,7 @@ func verify_throwing_program(
     XCTAssertThrowsError(try run_serialized_program(
         program: [UInt8](Data(hex: program)),
         args: [UInt8](Data(hex: args)),
-        max_cost: 0x7FFFFFFFFFFFFFFF,
+        max_cost: max_cost ?? 0x7FFFFFFFFFFFFFFF,
         flags: 0
     ), "", { error in
         let error = error as? EvalError

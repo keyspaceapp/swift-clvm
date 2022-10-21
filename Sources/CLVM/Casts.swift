@@ -27,7 +27,8 @@ public func int_to_bytes<T>(v: T) -> Data where T: SignedInteger {
 
 /// Return the number of bytes required to represent this integer.
 func limbs_for_int(v: BigInt) -> Int {
-    return (v.bitWidth + 7) >> 3
+    #warning("magnitude is pretty hacky, very brittle")
+    return (v.magnitude.bitWidth + 7) >> 3
 }
 
 
@@ -125,9 +126,9 @@ public extension SignedInteger {
         for i in 0..<ndigits {
             var thisdigit: UInt8 = self_bytes[i]
             if do_twos_comp {
-                thisdigit = (thisdigit ^ MASK) + carry
-                carry = thisdigit >> SHIFT
-                thisdigit &= MASK
+                let thisdigit16 = UInt16(thisdigit ^ MASK) + UInt16(carry)
+                carry = UInt8(thisdigit16 >> SHIFT)
+                thisdigit = UInt8(thisdigit16 & UInt16(MASK))
             }
             
             /* Because we're going LSB to MSB, thisdigit is more

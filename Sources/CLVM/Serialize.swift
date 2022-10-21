@@ -162,9 +162,7 @@ public func sexp_from_stream(f: inout Data.Iterator, to_sexp: ((CastableType) th
 }
 
 // Decodes the length prefix for an atom.
-func decode_size(f: inout BinaryDecodingContainer, initial_b: UInt8) throws -> UInt64 {
-    var position = 0
-    
+func decode_size(f: inout BinaryDecodingContainer, initial_b: UInt8, position: inout Int) throws -> UInt64 {
     assert((initial_b & 0x80) != 0)
     if (initial_b & 0x80) == 0 {
         // Atoms whose value fit in 7 bits don't have a length-prefix,
@@ -182,9 +180,7 @@ func decode_size(f: inout BinaryDecodingContainer, initial_b: UInt8) throws -> U
     }
     var size_blob = Data([b])
     if bit_count > 1 {
-        position += bit_count - 1
-        let peek = try f.peek(length: position)
-        let remaining_buffer = [UInt8](peek[peek.count-bit_count - 1..<peek.count])
+        let remaining_buffer = try read_exact(bit_count - 1, p: &position, f: &f)
         size_blob += remaining_buffer
     }
     // need to convert size_blob to an int
@@ -193,11 +189,11 @@ func decode_size(f: inout BinaryDecodingContainer, initial_b: UInt8) throws -> U
         throw ValueError("bad encoding")
     }
     for b in size_blob {
-        v <<= 8;
+        v <<= 8
         v += UInt64(b)
     }
     if v >= 0x400000000 {
-        throw(ValueError("blob too large"))
+        throw(ValueError("bad encoding"))
     }
     return UInt64(v)
 }
@@ -207,24 +203,23 @@ enum ParseOp {
     case cons
 }
 
+private func read_exact(_ count: Int, p: inout Int, f: inout BinaryDecodingContainer) throws -> [UInt8] {
+    p += count
+    let peek = Array(try f.peek(length: p))
+    return [UInt8](peek[peek.count-count..<peek.count])
+}
+
 public func serialized_length_from_bytes(f: inout BinaryDecodingContainer) throws -> UInt64 {
-    var bytes: [UInt8] = []
-    
-    var length: UInt64 = 0
-    var ops: [ParseOp] = [.sexp]
     var position = 0
+    var ops: [ParseOp] = [.sexp]
+    var b: [UInt8] = [0]
     while true {
-        let op = ops.popLast()
-        if op == nil {
+        guard let op = ops.popLast() else {
             break
         }
-        switch op! {
+        switch op {
         case .sexp:
-            position += 1
-            let peek = try f.peek(length: position)
-            let b = [UInt8](peek[peek.count-1..<peek.count])
-            bytes.append(contentsOf: b)
-            length += UInt64(b.count)
+            b = try read_exact(1, p: &position, f: &f)
             if b[0] == CONS_BOX_MARKER {
                 // since all we're doing is to determing the length of the
                 // serialized buffer, we don't need to do anything about
@@ -238,26 +233,22 @@ public func serialized_length_from_bytes(f: inout BinaryDecodingContainer) throw
                 // or the
                 // special case of NIL
             } else {
-                let blob_size = try decode_size(f: &f, initial_b: b[0])
-                // f.seek(SeekFrom::Current(blob_size as i64))?;
+                let blob_size = try decode_size(f: &f, initial_b: b[0], position: &position)
                 position += Int(blob_size)
-                let peek2 = try f.peek(length: position)
-                let bytes2 = [UInt8](peek2[peek2.count-Int(blob_size)..<peek2.count])
-//                let bytes2 = try f.decode(length: Int(blob_size))
-                bytes.append(contentsOf: bytes2)
-                length += UInt64(blob_size)
-//                if (f.get_ref().len() as u64) < f.position() {
-//                    return Err(bad_encoding());
-//                }
+                do {
+                    _ = try f.peek(length: Int(blob_size))
+                } catch {
+                    throw ValueError("bad encoding")
+                }
             }
         case .cons:
             // cons. No need to construct any structure here. Just keep
             // going
-            break
+            continue
         }
     }
 
-    return length
+    return UInt64(position)
 }
 
 public protocol DataIterator: IteratorProtocol {
@@ -292,7 +283,7 @@ func _atom_from_stream(f: inout Data.Iterator, b: UInt8, to_sexp: ((CastableType
         }
         size_blob += b
     }
-    let size: Int = int_from_bytes(blob: size_blob) //Int.from_bytes(size_blob, endian: .big)
+    let size: Int = int_from_bytes(blob: size_blob)
     if size >= 0x400000000 {
         throw(ValueError("blob too large"))
     }
