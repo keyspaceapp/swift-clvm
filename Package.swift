@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "swift-clvm",
     platforms: [
-        .macOS(.v11),
+        .macOS(.v10_15),
         .iOS(.v13)
     ],
     products: [
@@ -16,7 +16,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/dankogai/swift-bignum", from: "5.2.5"),
         .package(url: "https://github.com/jverkoey/BinaryCodable", from: "0.3.1"),
-        .package(url: "git@github.com:keyspacewallet/swift-bls-signatures.git", from: "0.0.2")
+        .package(url: "git@github.com:keyspacewallet/swift-bls-signatures.git", from: "0.0.3")
     ],
     targets: [
         .target(

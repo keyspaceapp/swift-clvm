@@ -89,6 +89,6 @@ func parse_spends(
         cost: 0
     )
     #warning("not implemented")
-    print("\nparse_spends not implemented\n")
+    print("parse_spends not implemented")
     return .success(ret)
 }

@@ -253,10 +253,10 @@ func op_pubkey_for_exp(args: SExp) throws -> (Int, SExp) {
         // hack to get python % behavior with swift
         i0 += mod_value
     }
-    let exponent = PrivateKey(bytes: i0.to_bytes(byte_count: 32, endian: .big))! //i0.to_bytes(32, "big"))
+    let exponent = PrivateKey(bytes: i0.to_bytes(byte_count: 32, endian: .big)) //i0.to_bytes(32, "big"))
     do {
         #warning("why not just g1 directly")
-        let r = try SExp.to(v: .bytes(exponent.get_g1()!.get_bytes()))
+        let r = try SExp.to(v: .bytes(exponent.get_g1().get_bytes()))
         var cost = PUBKEY_BASE_COST
         cost += l0 * PUBKEY_COST_PER_BYTE
         return malloc_cost(cost: cost, atom: r)
