@@ -22,13 +22,11 @@ func sexp_to_byte_iterator(sexp: SExp) throws -> [UInt8] {
     var todo_stack = [sexp]
     while !todo_stack.isEmpty {
         let sexp = todo_stack.popLast()!
-        let pair = sexp.as_pair()
-        if pair != nil {
+        if let pair = sexp.as_pair() {
             bytes.append(CONS_BOX_MARKER)
-            todo_stack.append(pair!.1)
-            todo_stack.append(pair!.0)
-        }
-        else {
+            todo_stack.append(pair.1)
+            todo_stack.append(pair.0)
+        }  else {
             bytes.append(contentsOf: try atom_to_byte_iterator(atom: sexp.atom!))
         }
     }
