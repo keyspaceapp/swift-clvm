@@ -52,47 +52,45 @@ public class CLVMObject: CLVMObjectProtocol {
     }
 
     public init(v: CastableType) {
-        if case let .tuple(tuple) = v {
-            self.pair = (CLVMObject(v: tuple.0), CLVMObject(v: tuple.1))
+        switch v {
+        case .tuple(let tuple):
+            // The python comments say the values in pair always conform to the clvm object protocol.
+            // However, the type is declared as (Any, Any) and the code will pass through non clvm objects.
+            // Adding `to_sexp_type` here converts the values to clvm objects. It adds some overhead
+            // and may be incorrect but it resolves the undefined behavior and tests are passing.
+            self.pair = try! (to_sexp_type(v: tuple.0), to_sexp_type(v: tuple.1))
             self.atom = nil
-        }
-        else {
-            switch v {
-            case .bytes(let bytes):
-                self.atom = bytes
-                self.pair = nil
-                return
-            case .object(let object):
-                self.atom = object.atom
-                self.pair = object.pair
-                return
-            case .list(let list):
-                self.atom = nil
-                if list.count != 2 {
-//                    throw(ValueError("expected tuple"))
-                    print("WARNING THIS SHOULD NEVER BE REACHED")
-                } else {
-                    self.pair = (CLVMObject(v: list[0]), CLVMObject(v: list[1]))
-                }
-                return
-            case .sexp(let sexp):
-                self.atom = sexp.atom
-                self.pair = sexp.pair
-            case .string(let string):
-                self.atom = string.data(using: .utf8)
-                self.pair = nil
-            case .int(let int):
-                self.atom = int_to_bytes(v: int)
-                self.pair = nil
-            case .g1(_):
-                assert(false)
+        case .bytes(let bytes):
+            self.atom = bytes
+            self.pair = nil
+            return
+        case .object(let object):
+            self.atom = object.atom
+            self.pair = object.pair
+            return
+        case .list(let list):
+            if list.count != 2 {
+//                throw(ValueError("expected tuple"))
+                print("WARNING THIS SHOULD NEVER BE REACHED")
+                precondition(false)
                 self.atom = nil
                 self.pair = nil
-            case .tuple((_, _)):
-                assert(false)
+            } else {
                 self.atom = nil
-                self.pair = nil
+                self.pair = (CLVMObject(v: list[0]), CLVMObject(v: list[1]))
             }
+        case .sexp(let sexp):
+            self.atom = sexp.atom
+            self.pair = sexp.pair
+        case .string(let string):
+            self.atom = string.data(using: .utf8)
+            self.pair = nil
+        case .int(let int):
+            self.atom = int_to_bytes(v: int)
+            self.pair = nil
+        case .g1(let g1):
+            self.atom = g1.get_bytes()
+            self.pair = nil
         }
     }
 }
