@@ -185,7 +185,7 @@ open class SExp: CLVMObjectProtocol, Equatable, CustomDebugStringConvertible {
     // SExp objects with higher level functions, or None
     public var pair: (CLVMObjectProtocol?, CLVMObjectProtocol?)?
 
-    public init(obj: CLVMObjectProtocol?) {
+    public required init(obj: CLVMObjectProtocol?) {
         self.atom = obj?.atom
         self.pair = obj?.pair
     }
@@ -202,12 +202,12 @@ open class SExp: CLVMObjectProtocol, Equatable, CustomDebugStringConvertible {
         return self.pair != nil
     }
 
-    func nullp() -> Bool {
+    public func nullp() -> Bool {
         let v = self.atom
         return v != nil && v!.count == 0
     }
 
-    func as_int() -> BigInt {
+    public func as_int() -> BigInt {
         return int_from_bytes(blob: self.atom!)
     }
 
@@ -215,21 +215,20 @@ open class SExp: CLVMObjectProtocol, Equatable, CustomDebugStringConvertible {
         try sexp_to_stream(sexp: self)
     }
 
-    public static func to(v: CastableType?) throws -> SExp {
+    public static func to(v: CastableType?) throws -> Self {
         
-//        if isinstance(v, class_):
         if case .sexp(let sexp) = v {
-            return sexp
+            return self.init(obj: sexp)
         }
         if looks_like_clvm_object(o: v) {
-            return SExp(obj: CLVMObject(v: v!))
+            return Self.init(obj: CLVMObject(v: v!))
         }
 
         // this will lazily convert elements
-        return try SExp(obj: to_sexp_type(v: v))
+        return try self.init(obj: to_sexp_type(v: v))
     }
 
-    func cons(right: CastableType) throws -> SExp {
+    public func cons(right: CastableType) throws -> SExp {
         let s = (CastableType.sexp(self), right)
         return try SExp.to(v: .tuple(s))
     }
