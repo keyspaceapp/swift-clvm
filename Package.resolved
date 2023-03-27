@@ -30,7 +30,7 @@
     {
       "identity" : "swift-bls-signatures",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:keyspacewallet/swift-bls-signatures.git",
+      "location" : "https://github.com/keyspaceapp/swift-bls-signatures",
       "state" : {
         "revision" : "e107b5caca1ee4c06591b9db512bd2c5357b94b6",
         "version" : "0.0.3"
