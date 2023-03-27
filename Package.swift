@@ -17,7 +17,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/dankogai/swift-bignum", from: "5.2.5"),
         .package(url: "https://github.com/jverkoey/BinaryCodable", from: "0.3.1"),
-        .package(url: "git@github.com:keyspacewallet/swift-bls-signatures.git", from: "0.0.3")
+        .package(url: "https://github.com/keyspaceapp/swift-bls-signatures", from: "0.0.3")
     ],
     targets: [
         .target(
